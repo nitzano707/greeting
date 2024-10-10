@@ -1,14 +1,9 @@
-const API_URL = 'https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-11B-Vision-Instruct';
+const API_URL = 'https://api-inference.huggingface.co/models/gpt2';
 const API_KEY = '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'; 
 
 async function generateGreeting(name) {
-  const messages = [
-    {
-      "role": "user",
-      "content": `Create a personalized greeting for someone named ${name}.`
-    }
-  ];
-
+  const prompt = `צור ברכה ידידותית עבור ${name}:`;
+  
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
@@ -16,23 +11,27 @@ async function generateGreeting(name) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      "messages": messages
+      inputs: prompt,
+      parameters: {
+        max_length: 50,
+        num_return_sequences: 1
+      }
     })
   });
 
   if (!response.ok) {
-    const errorDetails = await response.json();
-    console.error('Error from API:', errorDetails);
-    throw new Error(`API returned status: ${response.status}`);
+    const errorDetails = await response.text();
+    console.error('שגיאה מה-API:', errorDetails);
+    throw new Error(`ה-API החזיר סטטוס: ${response.status}`);
   }
 
   const result = await response.json();
-  console.log('API result:', result);
+  console.log('תוצאת ה-API:', result);
 
-  if (result.choices && result.choices[0] && result.choices[0].message.content) {
-    return result.choices[0].message.content;
+  if (Array.isArray(result) && result[0] && result[0].generated_text) {
+    return result[0].generated_text.trim();
   } else {
-    throw new Error("Invalid response structure from API");
+    throw new Error("מבנה תגובה לא תקין מה-API");
   }
 }
 
@@ -40,18 +39,15 @@ async function generateGreeting(name) {
 document.getElementById('sendButton').addEventListener('click', async () => {
   const name = document.getElementById('nameInput').value;
   if (!name) {
-    alert('Please enter your name.');
+    alert('אנא הכנס את שמך.');
     return;
   }
-
-  document.getElementById('result').innerText = 'Generating greeting...';
-
+  document.getElementById('result').innerText = 'מייצר ברכה...';
   try {
     const greeting = await generateGreeting(name);
     document.getElementById('result').innerText = greeting;
   } catch (error) {
-    document.getElementById('result').innerText = 'Error generating greeting.';
-    console.error('Error:', error);
+    document.getElementById('result').innerText = 'שגיאה בייצור הברכה.';
+    console.error('שגיאה:', error);
   }
 });
-
