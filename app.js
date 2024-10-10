@@ -1,5 +1,5 @@
 const API_URL = 'https://api-inference.huggingface.co/models/EleutherAI/gpt-j-6B';
-const API_KEY = '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'; // כאן שים את מפתח ה-API שלך
+const API_KEY = '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'; // שים כאן את מפתח ה-API שלך
 
 async function generateGreeting(name) {
   const prompt = `Create a personalized greeting for someone named ${name}.`;
@@ -15,8 +15,21 @@ async function generateGreeting(name) {
     })
   });
 
+  if (!response.ok) {
+    // הצג שגיאה מפורטת אם הבקשה לא הצליחה
+    const errorDetails = await response.json();
+    console.error('Error from API:', errorDetails);
+    throw new Error(`API returned status: ${response.status}`);
+  }
+
   const result = await response.json();
-  return result[0].generated_text;
+
+  // נוודא שהתוצאה מכילה את מה שאנחנו מצפים לו
+  if (result && result.length > 0 && result[0].generated_text) {
+    return result[0].generated_text;
+  } else {
+    throw new Error("Invalid response structure from API");
+  }
 }
 
 // תהליך לחיצה על הכפתור
