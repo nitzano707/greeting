@@ -2,7 +2,7 @@ async function generateGreeting(name) {
   const prompt = `צור ברכה ידידותית בעברית עבור ${name}:`;
   
   try {
-    const response = await fetch('/api/huggingface-proxy', {
+    const response = await fetch('/.netlify/functions/huggingface-proxy', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -21,7 +21,8 @@ async function generateGreeting(name) {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
     const result = await response.json();
@@ -48,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const greeting = await generateGreeting(name);
       document.getElementById('result').innerText = greeting;
     } catch (error) {
-      document.getElementById('result').innerText = 'שגיאה בייצור הברכה. אנא נסה שוב מאוחר יותר.';
+      document.getElementById('result').innerText = `שגיאה בייצור הברכה: ${error.message}`;
       console.error('שגיאה:', error);
     }
   });
