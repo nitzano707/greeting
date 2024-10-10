@@ -1,4 +1,4 @@
-const API_URL = 'https://api-inference.huggingface.co/models/EleutherAI/gpt-j-6B';
+const API_URL = 'https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-11B-Vision';
 const API_KEY = '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'; // שים כאן את מפתח ה-API שלך
 
 async function generateGreeting(name) {
@@ -16,16 +16,15 @@ async function generateGreeting(name) {
   });
 
   if (!response.ok) {
-    // הצג שגיאה מפורטת אם הבקשה לא הצליחה
     const errorDetails = await response.json();
     console.error('Error from API:', errorDetails);
     throw new Error(`API returned status: ${response.status}`);
   }
 
   const result = await response.json();
+  console.log('API result:', result); // הדפס את התוצאה המלאה כדי לבדוק את מבנה התגובה
 
-  // נוודא שהתוצאה מכילה את מה שאנחנו מצפים לו
-  if (result && result.length > 0 && result[0].generated_text) {
+  if (result && result[0] && result[0].generated_text) {
     return result[0].generated_text;
   } else {
     throw new Error("Invalid response structure from API");
@@ -40,13 +39,4 @@ document.getElementById('sendButton').addEventListener('click', async () => {
     return;
   }
 
-  document.getElementById('result').innerText = 'Generating greeting...';
-
-  try {
-    const greeting = await generateGreeting(name);
-    document.getElementById('result').innerText = greeting;
-  } catch (error) {
-    document.getElementById('result').innerText = 'Error generating greeting.';
-    console.error('Error:', error);
-  }
-});
+  document.getElementById('result').innerText = 'G
