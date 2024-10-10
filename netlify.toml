@@ -1,8 +1,13 @@
 [build]
   functions = "netlify/functions"
 
+[functions]
+  node_bundler = "esbuild"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
-  force = true  // נסה להוסיף את זה
+
+[build.environment]
+  NODE_VERSION = "14"
