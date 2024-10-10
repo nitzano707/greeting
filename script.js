@@ -1,14 +1,10 @@
-const API_URL = 'https://api-inference.huggingface.co/models/onlplab/gpt2-hebrew';
-const API_KEY = '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'; 
-
 async function generateGreeting(name) {
   const prompt = `צור ברכה ידידותית בעברית עבור ${name}:`;
   
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch('/api/huggingface-proxy', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -29,8 +25,6 @@ async function generateGreeting(name) {
     }
 
     const result = await response.json();
-    console.log('API result:', result);
-
     if (Array.isArray(result) && result[0] && result[0].generated_text) {
       return result[0].generated_text.trim();
     } else {
