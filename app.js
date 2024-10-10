@@ -1,8 +1,13 @@
-const API_URL = 'https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-11B-Vision';
-const API_KEY = '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'; // שים כאן את מפתח ה-API שלך
+const API_URL = 'https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-11B-Vision-Instruct';
+const API_KEY = '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'; 
 
 async function generateGreeting(name) {
-  const prompt = `Create a personalized greeting for someone named ${name}.`;
+  const messages = [
+    {
+      "role": "user",
+      "content": `Create a personalized greeting for someone named ${name}.`
+    }
+  ];
 
   const response = await fetch(API_URL, {
     method: 'POST',
@@ -11,7 +16,7 @@ async function generateGreeting(name) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      inputs: prompt
+      "messages": messages
     })
   });
 
@@ -22,16 +27,16 @@ async function generateGreeting(name) {
   }
 
   const result = await response.json();
-  console.log('API result:', result); // הדפס את התוצאה המלאה כדי לבדוק את מבנה התגובה
+  console.log('API result:', result);
 
-  if (result && result[0] && result[0].generated_text) {
-    return result[0].generated_text;
+  if (result.choices && result.choices[0] && result.choices[0].message.content) {
+    return result.choices[0].message.content;
   } else {
     throw new Error("Invalid response structure from API");
   }
 }
 
-// תהליך לחיצה על הכפתור
+// לחיצה על הכפתור
 document.getElementById('sendButton').addEventListener('click', async () => {
   const name = document.getElementById('nameInput').value;
   if (!name) {
@@ -39,4 +44,14 @@ document.getElementById('sendButton').addEventListener('click', async () => {
     return;
   }
 
-  document.getElementById('result').innerText = 'G
+  document.getElementById('result').innerText = 'Generating greeting...';
+
+  try {
+    const greeting = await generateGreeting(name);
+    document.getElementById('result').innerText = greeting;
+  } catch (error) {
+    document.getElementById('result').innerText = 'Error generating greeting.';
+    console.error('Error:', error);
+  }
+});
+
