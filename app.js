@@ -1,5 +1,5 @@
 const API_URL = 'https://api-inference.huggingface.co/models/EleutherAI/gpt-j-6B';
-const API_KEY = 'YOUR_API_KEY'; // כאן שים את מפתח ה-API שלך
+const API_KEY = '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'; // כאן שים את מפתח ה-API שלך
 
 async function generateGreeting(name) {
   const prompt = `Create a personalized greeting for someone named ${name}.`;
