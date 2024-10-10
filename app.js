@@ -1,7 +1,22 @@
-const API_URL = 'https://api-inference.huggingface.co/models/onlplab/gpt2-hebrew';
-const API_KEY = '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'; // החלף זאת במפתח האמיתי שלך
+import { AutoTokenizer } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.0';
 
-async function queryModel(input) {
+const API_URL = 'https://api-inference.huggingface.co/models/onlplab/gpt2-hebrew';
+const API_KEY = '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'; 
+
+let tokenizer;
+
+async function initTokenizer() {
+  tokenizer = await AutoTokenizer.from_pretrained('Xenova/gpt-4o');
+}
+
+async function generateGreeting(name) {
+  if (!tokenizer) {
+    await initTokenizer();
+  }
+
+  const prompt = `צור ברכה ידידותית בעברית עבור ${name}:`;
+  const encodedPrompt = await tokenizer.encode(prompt);
+  
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
@@ -9,7 +24,7 @@ async function queryModel(input) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      inputs: input,
+      inputs: prompt,
       parameters: {
         max_length: 100,
         num_return_sequences: 1,
@@ -25,10 +40,31 @@ async function queryModel(input) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  return await response.json();
+  const result = await response.json();
+  console.log('API result:', result);
+
+  if (Array.isArray(result) && result[0] && result[0].generated_text) {
+    return result[0].generated_text.trim();
+  } else {
+    throw new Error("מבנה תגובה לא תקין מה-API");
+  }
 }
 
-// שימוש בפונקציה
-queryModel("שלום, מה שלומך?")
-  .then(result => console.log(result))
-  .catch(error => console.error('Error:', error));
+document.addEventListener('DOMContentLoaded', () => {
+  initTokenizer();
+  document.getElementById('sendButton').addEventListener('click', async () => {
+    const name = document.getElementById('nameInput').value;
+    if (!name) {
+      alert('אנא הכנס את שמך.');
+      return;
+    }
+    document.getElementById('result').innerText = 'מייצר ברכה...';
+    try {
+      const greeting = await generateGreeting(name);
+      document.getElementById('result').innerText = greeting;
+    } catch (error) {
+      document.getElementById('result').innerText = 'שגיאה בייצור הברכה.';
+      console.error('שגיאה:', error);
+    }
+  });
+});
