@@ -1,6 +1,6 @@
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 
-exports.handler = async function(event, context) {
+export const handler = async function(event, context) {
   const HUGGINGFACE_API_URL = 'https://api-inference.huggingface.co/models/onlplab/gpt2-hebrew';
   const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
 
