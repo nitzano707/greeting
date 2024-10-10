@@ -1,36 +1,48 @@
-import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.0';
-
 const API_URL = 'https://api-inference.huggingface.co/models/onlplab/gpt2-hebrew';
 const API_KEY = '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'; 
 
-let generator;
-
-async function initGenerator() {
-  generator = await pipeline('text-generation', 'Xenova/gpt2-hebrew');
-}
-
 async function generateGreeting(name) {
-  if (!generator) {
-    await initGenerator();
-  }
-
   const prompt = `צור ברכה ידידותית בעברית עבור ${name}:`;
   
   try {
-    const result = await generator(prompt, {
-      max_length: 100,
-      num_return_sequences: 1,
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: {
+          max_length: 100,
+          num_return_sequences: 1,
+          do_sample: true,
+          top_k: 50,
+          top_p: 0.95,
+          temperature: 0.7
+        }
+      })
     });
-    
-    return result[0].generated_text.trim();
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('API result:', result);
+
+    if (Array.isArray(result) && result[0] && result[0].generated_text) {
+      return result[0].generated_text.trim();
+    } else {
+      throw new Error("מבנה תגובה לא תקין מה-API");
+    }
   } catch (error) {
     console.error('שגיאה בייצור הברכה:', error);
-    throw new Error('שגיאה בייצור הברכה');
+    throw error;
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  initGenerator();
   document.getElementById('sendButton').addEventListener('click', async () => {
     const name = document.getElementById('nameInput').value;
     if (!name) {
@@ -42,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const greeting = await generateGreeting(name);
       document.getElementById('result').innerText = greeting;
     } catch (error) {
-      document.getElementById('result').innerText = 'שגיאה בייצור הברכה.';
+      document.getElementById('result').innerText = 'שגיאה בייצור הברכה. אנא נסה שוב מאוחר יותר.';
       console.error('שגיאה:', error);
     }
   });
