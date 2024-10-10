@@ -1,6 +1,8 @@
-import fetch from 'node-fetch';
+const fetch = require('node-fetch');
 
-export const handler = async function(event, context) {
+exports.handler = async function(event, context) {
+  console.log('Function invoked');
+  
   const HUGGINGFACE_API_URL = 'https://api-inference.huggingface.co/models/onlplab/gpt2-hebrew';
   const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
 
@@ -9,6 +11,7 @@ export const handler = async function(event, context) {
   }
 
   try {
+    console.log('Sending request to Hugging Face API');
     const response = await fetch(HUGGINGFACE_API_URL, {
       method: 'POST',
       headers: {
@@ -19,12 +22,14 @@ export const handler = async function(event, context) {
     });
 
     const data = await response.json();
+    console.log('Received response from Hugging Face API');
 
     return {
       statusCode: 200,
       body: JSON.stringify(data)
     };
   } catch (error) {
+    console.error('Error:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Failed to fetch from Hugging Face API' })
